@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>My Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Shadows+Into+Light&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a3a8a;
+    --ink-soft:#2a4fa8;
+    --ink-faded:#5b7cc4;
+    --paper:#fbf8ef;
+    --paper-edge:#eee4c8;
+    --rule:#bcd4ec;
+    --margin-rule:#e8a6a0;
+    --shadow:0 8px 28px rgba(40,30,10,.18), 0 2px 6px rgba(40,30,10,.08);
+    --bar:#f1e9d2;
+    --bar-border:#d8c89a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:'Kalam',cursive;
+    background:
+      radial-gradient(1200px 800px at 50% -10%, #d9cfb1 0%, #b8ac89 60%, #8d8262 100%);
+    color:var(--ink);
+    min-height:100vh;
+    overflow-x:hidden;
+    padding:64px 0 78px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- TOP NAV ---------- */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;height:56px;z-index:20;
+    background:linear-gradient(180deg,var(--bar) 0%, #e8deba 100%);
+    border-bottom:2px solid var(--bar-border);
+    box-shadow:0 2px 10px rgba(0,0,0,.18);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 14px;
+    backdrop-filter:blur(4px);
+  }
+  .brand{
+    font-family:'Caveat',cursive;
+    font-size:30px;font-weight:700;color:var(--ink);
+    letter-spacing:.5px;
+    display:flex;align-items:center;gap:8px;
+    text-shadow:0 1px 0 rgba(255,255,255,.4);
+  }
+  .brand .ribbon{
+    display:inline-block;width:8px;height:22px;background:var(--margin-rule);
+    border-radius:2px;transform:rotate(-6deg);
+  }
+  .tabs{display:flex;gap:4px}
+  .tab{
+    font-family:'Caveat',cursive;
+    font-size:22px;font-weight:600;
+    background:transparent;border:none;color:var(--ink-faded);
+    padding:8px 14px;border-radius:10px;cursor:pointer;
+    transition:all .15s ease;
+    position:relative;
+  }
+  .tab:hover{color:var(--ink)}
+  .tab.active{color:var(--ink)}
+  .tab.active::after{
+    content:'';position:absolute;left:14%;right:14%;bottom:4px;height:3px;
+    background:var(--ink);border-radius:2px;
+    transform:rotate(-.5deg);
+  }
+  .menu-btn{
+    background:transparent;border:none;color:var(--ink);
+    font-size:26px;cursor:pointer;padding:6px 10px;border-radius:8px;
+    display:none;
+  }
+
+  /* ---------- JOURNAL PAGE ---------- */
+  .journal{
+    max-width:760px;margin:18px auto;
+    background:var(--paper);
+    border-radius:4px 4px 2px 2px;
+    box-shadow:var(--shadow);
+    position:relative;
+    min-height:calc(100vh - 180px);
+    padding:42px 46px 60px 90px;
+    background-image:
+      repeating-linear-gradient(
+        transparent 0px,
+        transparent 35px,
+        var(--rule) 35px,
+        var(--rule) 36px
+      );
+    background-position:0 52px;
+    overflow:hidden;
+  }
+  /* red margin line */
+  .journal::before{
+    content:'';position:absolute;top:0;bottom:0;left:68px;width:2px;
+    background:var(--margin-rule);
+    box-shadow:1px 0 0 rgba(200,100,90,.2);
+  }
+  /* paper edge / aging */
+  .journal::after{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(ellipse at 0% 0%, rgba(120,90,30,.08), transparent 40%),
+      radial-gradient(ellipse at 100% 100%, rgba(120,90,30,.1), transparent 45%);
+    border-radius:inherit;
+  }
+  /* binding holes (left edge) */
+  .holes{
+    position:absolute;top:0;bottom:0;left:22px;width:18px;
+    display:flex;flex-direction:column;justify-content:space-around;
+    padding:60px 0;pointer-events:none;
+  }
+  .holes span{
+    width:14px;height:14px;border-radius:50%;
+    background:radial-gradient(circle at 40% 40%, #b8ac89 0%, #8d8262 70%, #6a5f44 100%);
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.4);
+  }
+
+  .page-header{
+    font-family:'Caveat',cursive;
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin-bottom:10px;
+    line-height:1;
+  }
+  .page-title{
+    font-size:44px;font-weight:700;color:var(--ink);
+    transform:rotate(-.6deg);
+  }
+  .page-date{
+    font-size:22px;color:var(--ink-soft);font-weight:500;
+    transform:rotate(.4deg);
+  }
+  .subtitle{
+    font-family:'Caveat',cursive;
+    font-size:20px;color:var(--ink-faded);
+    margin-bottom:20px;transform:rotate(-.2deg);
+  }
+
+  /* ---------- ENTRIES ---------- */
+  .entries{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+  .entry{
+    display:flex;align-items:flex-start;gap:10px;
+    min-height:36px;padding:4px 2px 0;
+    position:relative;
+  }
+  .check{
+    flex-shrink:0;margin-top:4px;
+    width:22px;height:22px;border:2px solid var(--ink);
+    border-radius:4px;background:transparent;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .12s ease;
+    transform:rotate(-2deg);
+  }
+  .check:hover{transform:rotate(-2deg) scale(1.08)}
+  .check svg{width:20px;height:20px;opacity:0;transition:opacity .15s}
+  .entry.done .check svg{opacity:1}
+  .text{
+    flex:1;
+    font-family:'Caveat',cursive;
+    font-size:28px;font-weight:500;
+    color:var(--ink);
+    background:transparent;border:none;outline:none;
+    resize:none;overflow:hidden;
+    line-height:36px;
+    padding:0 4px;
+    width:100%;
+    min-height:36px;
+    caret-color:var(--ink);
+  }
+  .text::placeholder{color:var(--ink-faded);opacity:.55}
+  .entry.done .text{
+    text-decoration:line-through;
+    text-decoration-color:var(--ink-soft);
+    text-decoration-thickness:2px;
+    color:var(--ink-faded);
+  }
+  .del{
+    flex-shrink:0;margin-top:6px;
+    background:transparent;border:none;
+    font-family:'Caveat',cursive;font-size:22px;
+    color:var(--ink-faded);cursor:pointer;
+    opacity:0;transition:opacity .2s;
+    padding:2px 6px;
+  }
+  .entry:hover .del,.entry:focus-within .del{opacity:.8}
+  .del:hover{color:#c0392b;opacity:1}
+
+  .empty{
+    font-family:'Caveat',cursive;
+    font-size:24px;color:var(--ink-faded);
+    text-align:center;padding:40px 10px;
+    font-style:italic;
+    transform:rotate(-.3deg);
+  }
+
+  /* doodle divider */
+  .doodle{
+    margin:14px 0 6px;text-align:center;color:var(--ink-faded);
+    font-family:'Caveat',cursive;font-size:22px;
+    letter-spacing:6px;
+  }
+
+  /* ---------- BOTTOM BAR ---------- */
+  .bottombar{
+    position:fixed;left:0;right:0;bottom:0;height:66px;z-index:20;
+    background:linear-gradient(180deg,#e8deba 0%, var(--bar) 100%);
+    border-top:2px solid var(--bar-border);
+    box-shadow:0 -2px 10px rgba(0,0,0,.18);
+    display:flex;align-items:center;justify-content:space-around;
+    padding:0 6px 6px;
+    padding-bottom:calc(6px + env(safe-area-inset-bottom,0));
+  }
+  .shortcut{
+    background:transparent;border:none;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:6px 10px;border-radius:10px;
+    color:var(--ink);
+    font-family:'Caveat',cursive;font-size:17px;font-weight:600;
+    min-width:58px;
+    transition:transform .12s ease, background .15s;
+  }
+  .shortcut:hover{background:rgba(26,58,138,.08)}
+  .shortcut:active{transform:scale(.94)}
+  .shortcut .ic{
+    font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;
+    width:30px;height:30px;
+  }
+  .shortcut.add{
+    background:var(--ink);color:var(--paper);
+    border-radius:50%;width:54px;height:54px;padding:0;
+    margin-top:-18px;
+    box-shadow:0 6px 14px rgba(26,58,138,.4), 0 2px 4px rgba(0,0,0,.2);
+    font-size:34px;
+    justify-content:center;
+  }
+  .shortcut.add .ic{font-size:34px;width:auto;height:auto}
+  .shortcut.add:hover{background:var(--ink-soft)}
+  .shortcut.add span:last-child{display:none}
+
+  /* toast */
+  .toast{
+    position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-10px);
+    background:var(--ink);color:var(--paper);
+    padding:8px 18px;border-radius:20px;
+    font-family:'Caveat',cursive;font-size:20px;
+    opacity:0;pointer-events:none;
+    transition:opacity .25s, transform .25s;
+    z-index:30;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* responsive */
+  @media (max-width:720px){
+    body{padding:58px 0 78px}
+    .topbar{height:52px;padding:0 10px}
+    .brand{font-size:26px}
+    .tabs{gap:0}
+    .tab{font-size:19px;padding:6px 10px}
+    .journal{
+      margin:12px 8px;
+      padding:30px 22px 50px 64px;
+      background-position:0 44px;
+      min-height:calc(100vh - 160px);
+    }
+    .journal::before{left:50px}
+    .holes{left:16px;width:14px;padding:46px 0}
+    .holes span{width:10px;height:10px}
+    .page-title{font-size:34px}
+    .page-date{font-size:18px}
+    .subtitle{font-size:17px;margin-bottom:14px}
+    .text{font-size:24px;line-height:34px}
+    .entry{min-height:34px}
+  }
+  @media (max-width:420px){
+    .tab{font-size:17px;padding:5px 7px}
+    .brand{font-size:22px}
+    .shortcut{font-size:14px;min-width:50px;padding:4px 6px}
+    .shortcut .ic{font-size:19px}
+  }
+</style>
+</head>
+<body>
+
+  <!-- TOP NAV -->
+  <nav class="topbar">
+    <div class="brand"><span class="ribbon"></span>My Journal</div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-view="long">Long&nbsp;Term</button>
+      <button class="tab" data-view="short">Short&nbsp;Term</button>
+      <button class="tab" data-view="daily">Daily</button>
+    </div>
+  </nav>
+
+  <!-- PAGE -->
+  <main class="journal" id="page">
+    <div class="holes" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <header class="page-header">
+      <div class="page-title" id="pageTitle">Long Term Goals</div>
+      <div class="page-date" id="pageDate">— 8 Apr 2026</div>
+    </header>
+    <div class="subtitle" id="pageSub">where I'm headed…</div>
+
+    <div class="entries" id="entries"></div>
+
+    <div class="doodle">· · · ✦ · · ·</div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottombar">
+    <button class="shortcut" data-view="long" title="Long term goals">
+      <span class="ic">✦</span><span>Long</span>
+    </button>
+    <button class="shortcut" data-view="short" title="Short term goals">
+      <span class="ic">➤</span><span>Short</span>
+    </button>
+    <button class="shortcut add" id="addBtn" title="New entry">
+      <span class="ic">+</span><span></span>
+    </button>
+    <button class="shortcut" data-view="daily" title="Daily tasks">
+      <span class="ic">☑</span><span>Daily</span>
+    </button>
+    <button class="shortcut" id="clearBtn" title="Clear completed">
+      <span class="ic">✕</span><span>Clear</span>
+    </button>
+  </nav>
+
+  <div class="toast" id="toast">Saved</div>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'myJournal.v1';
+  const VIEWS = {
+    long:  { title:'Long Term Goals',  sub:"where I'm headed…",     daily:false },
+    short: { title:'Short Term Goals', sub:'the next few weeks…',   daily:false },
+    daily: { title:'Today',            sub:"what I'll get done…",   daily:true  },
+  };
+
+  const todayKey = () => {
+    const d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  };
+  const fmtDate = d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+  // state: { long:[{id,text,done}], short:[...], daily:{ 'YYYY-MM-DD':[...] } }
+  let state = load();
+  let currentView = 'long';
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return { long:[], short:[], daily:{} };
+  }
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  function listFor(view){
+    if(view==='daily'){
+      const k = todayKey();
+      if(!state.daily[k]) state.daily[k] = [];
+      return state.daily[k];
+    }
+    return state[view];
+  }
+
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+  // ---------- rendering ----------
+  const pageEl = document.getElementById('page');
+  const entriesEl = document.getElementById('entries');
+  const titleEl = document.getElementById('pageTitle');
+  const subEl = document.getElementById('pageSub');
+  const dateEl = document.getElementById('pageDate');
+
+  function render(){
+    const cfg = VIEWS[currentView];
+    titleEl.textContent = cfg.title;
+    subEl.textContent = cfg.sub;
+    dateEl.textContent = '— ' + fmtDate(new Date());
+
+    // tabs
+    document.querySelectorAll('.tab').forEach(t=>{
+      t.classList.toggle('active', t.dataset.view===currentView);
+    });
+
+    const items = listFor(currentView);
+    entriesEl.innerHTML = '';
+
+    if(items.length===0){
+      const empty = document.createElement('div');
+      empty.className='empty';
+      empty.textContent = currentView==='daily'
+        ? "A fresh page. Tap + to begin today."
+        : "Nothing written yet. Tap + to add.";
+      entriesEl.appendChild(empty);
+      return;
+    }
+
+    items.forEach(item => entriesEl.appendChild(buildEntry(item)));
+  }
+
+  function buildEntry(item){
+    const row = document.createElement('div');
+    row.className = 'entry' + (item.done ? ' done' : '');
+    row.dataset.id = item.id;
+
+    // check
+    const chk = document.createElement('button');
+    chk.className='check';
+    chk.setAttribute('aria-label','toggle done');
+    chk.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#1a3a8a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 L10 18 L20 6"/></svg>';
+    chk.addEventListener('click', e=>{
+      e.preventDefault();
+      item.done = !item.done;
+      row.classList.toggle('done', item.done);
+      save();
+    });
+    row.appendChild(chk);
+
+    // text
+    const ta = document.createElement('textarea');
+    ta.className='text';
+    ta.rows = 1;
+    ta.placeholder = 'write something…';
+    ta.value = item.text || '';
+    ta.addEventListener('input', ()=>{
+      item.text = ta.value;
+      autosize(ta);
+      save();
+    });
+    ta.addEventListener('keydown', e=>{
+      if(e.key==='Enter' && !e.shiftKey){
+        e.preventDefault();
+        addEntry();
+      }
+      if(e.key==='Backspace' && ta.value===''){
+        e.preventDefault();
+        removeEntry(item.id, true);
+      }
+    });
+    row.appendChild(ta);
+
+    // delete
+    const del = document.createElement('button');
+    del.className='del';
+    del.textContent='✕';
+    del.title='Delete';
+    del.addEventListener('click', ()=>removeEntry(item.id));
+    row.appendChild(del);
+
+    // autosize after insertion
+    requestAnimationFrame(()=>autosize(ta));
+    return row;
+  }
+
+  function autosize(ta){
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  }
+
+  function addEntry(){
+    const items = listFor(currentView);
+    const item = { id:uid(), text:'', done:false };
+    items.push(item);
+    save();
+    render();
+    // focus the new one
+    requestAnimationFrame(()=>{
+      const last = entriesEl.querySelector('.entry:last-child .text');
+      if(last){ last.focus(); }
+    });
+  }
+
+  function removeEntry(id, focusPrev=false){
+    const items = listFor(currentView);
+    const idx = items.findIndex(i=>i.id===id);
+    if(idx<0) return;
+    items.splice(idx,1);
+    save();
+    render();
+    if(focusPrev){
+      const all = entriesEl.querySelectorAll('.text');
+      const target = all[Math.max(0, idx-1)];
+      if(target){
+        target.focus();
+        const v = target.value;
+        target.setSelectionRange(v.length,v.length);
+      }
+    }
+  }
+
+  function clearDone(){
+    const items = listFor(currentView);
+    const before = items.length;
+    const kept = items.filter(i=>!i.done);
+    if(currentView==='daily'){
+      state.daily[todayKey()] = kept;
+    }else{
+      state[currentView] = kept;
+    }
+    save();
+    render();
+    toast(before===kept.length ? 'Nothing to clear' : 'Cleared completed');
+  }
+
+  // toast
+  const toastEl = document.getElementById('toast');
+  let toastTimer=null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>toastEl.classList.remove('show'), 1400);
+  }
+
+  // ---------- wire up ----------
+  function setView(v){
+    if(!VIEWS[v]) return;
+    currentView = v;
+    render();
+  }
+
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click', ()=>setView(t.dataset.view));
+  });
+  document.querySelectorAll('.shortcut[data-view]').forEach(b=>{
+    b.addEventListener('click', ()=>setView(b.dataset.view));
+  });
+  document.getElementById('addBtn').addEventListener('click', addEntry);
+  document.getElementById('clearBtn').addEventListener('click', clearDone);
+
+  // keyboard shortcut: ctrl/cmd+enter adds new entry anywhere
+  document.addEventListener('keydown', e=>{
+    if((e.ctrlKey||e.metaKey) && e.key==='Enter'){
+      e.preventDefault();
+      addEntry();
+    }
+  });
+
+  // first paint
+  render();
+})();
+</script>
+</body>
+</html>
